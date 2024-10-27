@@ -19,7 +19,7 @@
 
 Due to YouTube blocking VPS IPs drastically, we have implemented a fix. Follow the steps below:
 
-1. **Join our Support Group**: Type `#script` in our [support group](https://t.me/NexGenSpam) to get the necessary script.
+1. **Join our Support Group**: Type `#script` in our [support group](https://t.me/nothing_bots_support) to get the necessary script.
 2. **Run the Script**: Run the downloaded script on your Windows Desktop Through VS Code or any other Software to generate cookies.
 3. **Fork the Repository**: Fork this repository to your GitHub account.
 4. **Add Cookies**: Paste the generated cookies into the `cookies` folder in your forked repository.
@@ -66,8 +66,13 @@ This process will allow you to bypass the YouTube restrictions and ensure smooth
    ```
 5. **Clone the Repository**
    ```bash
-   git clone https://github.com/CyberPixelPro/AviaxMusic && cd AviaxMusic
+   git clone https://github.com/damian-bots/AXmusic
    ```
+      ```bash
+   cd AXmusic
+   ```
+
+   
 6. **Install Requirements**
    ```bash
    pip3 install -U -r requirements.txt
