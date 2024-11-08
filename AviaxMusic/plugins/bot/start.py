@@ -87,20 +87,29 @@ async def start_pm(client, message: Message, _):
             )
 
             await m.delete()
-            await app.send_video(
-                chat_id=message.chat.id,
-                video=thumbnail,
-                caption=searched_text,
-                supports_streaming=True,
-                reply_markup=key
-            )
 
-            if await is_on_off(2):
-                await app.send_message(
-                    chat_id=config.LOG_GROUP_ID,
-                    text=f"{message.from_user.mention} checked <b>track information</b>."
-                )
-            return
+# Sending the video first
+await app.send_video(
+    chat_id=message.chat.id,
+    video=thumbnail,
+    supports_streaming=True,
+    reply_markup=key
+)
+
+# Sending the caption text separately
+await app.send_message(
+    chat_id=message.chat.id,
+    text=searched_text
+)
+
+# Logging if the feature is enabled
+if await is_on_off(2):
+    await app.send_message(
+        chat_id=config.LOG_GROUP_ID,
+        text=f"{message.from_user.mention} checked <b>track information</b>."
+    )
+return
+
 
     else:
         out = private_panel(_)
