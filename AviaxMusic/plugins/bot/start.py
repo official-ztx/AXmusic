@@ -25,9 +25,9 @@ from strings import get_string
 # Helper function to send the start video and caption separately
 async def send_start_video(message: Message, caption: str, reply_markup: InlineKeyboardMarkup):
     """Send a start video instead of an image."""
-    # Send the video first
-    video_message = await message.reply_video(
-        video=config.START_VIDEO_URL,  # This should be a video URL
+    # Send the video first (video URL from config)
+    await message.reply_video(
+        video=config.START_VIDEO_URL,  # This should be a video URL from your config
         caption=caption,
         supports_streaming=True,
         reply_markup=reply_markup
@@ -95,19 +95,18 @@ async def start_pm(client, message: Message, _):
 
                 await m.delete()
 
-                # First send the video thumbnail
-                await app.send_photo(
-                    chat_id=message.chat.id,
-                    photo=thumbnail,  # Thumbnail of the video
-                    caption=searched_text,  # Optional caption with video details
-                    reply_markup=key  # Inline buttons with the video link
-                )
-
-                # Now send the video separately (this would be the YouTube video, not the thumbnail)
+                # First send the video with the inline button
                 await app.send_video(
                     chat_id=message.chat.id,
                     video=config.START_VIDEO_URL,  # Your starting video URL
                     supports_streaming=True,
+                    reply_markup=key
+                )
+
+                # Now, send the text (video details) separately in another message
+                await app.send_message(
+                    chat_id=message.chat.id,
+                    text=searched_text,
                     reply_markup=key
                 )
 
