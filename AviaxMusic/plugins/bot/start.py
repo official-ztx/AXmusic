@@ -100,7 +100,6 @@ async def start_pm(client, message: Message, _):
         # Send the video without a caption
         await app.send_video(
             chat_id=message.chat.id,
-            video=thumbnail,
             supports_streaming=True,
             reply_markup=key
         )
@@ -127,7 +126,7 @@ async def start_pm(client, message: Message, _):
     # Default response if no specific command is found
     out = private_panel(_)
     UP, CPU, RAM, DISK = await bot_sys_stats()
-    caption = _["start_2"].format(message.from_user.mention, app.mention, UP, DISK, CPU, RAM)
+    caption = _["start_2"].format(mesage.from_user.mention, app.mention, UP, DISK, CPU, RAM)
     await send_start_video(message, caption, InlineKeyboardMarkup(out))
 
     if await is_on_off(2):
