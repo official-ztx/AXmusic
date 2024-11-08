@@ -78,10 +78,8 @@ async def start_pm(client, message: Message, _):
                 ]
             )
          
-   if m:
+    if m:
     await m.delete()
-    
-    # Send photo with caption and keyboard
     await app.send_photo(
         chat_id=message.chat.id,
         photo=thumbnail,
@@ -89,14 +87,13 @@ async def start_pm(client, message: Message, _):
         reply_markup=key
     )
     
-    # Log if enabled
     if await is_on_off(2):
-        await app.send_message(
+        return await app.send_message(
             chat_id=config.LOG_GROUP_ID,
             text=(
-                f"{message.from_user.mention} started the bot to check <b>track information</b>.\n"
-                f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
-                f"<b>Username:</b> @{message.from_user.username}"
+                f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n"
+                f"<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n"
+                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}"
             )
         )
 
