@@ -8,7 +8,7 @@ from AviaxMusic.utils import help_pannel
 from AviaxMusic.utils.database import get_lang
 from AviaxMusic.utils.decorators.language import LanguageStart, languageCB
 from AviaxMusic.utils.inline.help import help_back_markup, private_help_panel
-from config import BANNED_USERS, START_IMG_URL, SUPPORT_GROUP
+from config import BANNED_USERS, START_VIDEO_URL, SUPPORT_GROUP
 from strings import get_string, helpers
 
 
@@ -38,10 +38,11 @@ async def helper_private(
         language = await get_lang(update.chat.id)
         _ = get_string(language)
         keyboard = help_pannel(_)
-        await update.reply_photo(
-            photo=START_IMG_URL,
+        await update.reply_video(
+            video=START_VIDEO_URL,
             caption=_["help_1"].format(SUPPORT_GROUP),
-            reply_markup=keyboard,
+            supports_streaming=True, 
+            reply_markup=keyboard
         )
 
 
