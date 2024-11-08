@@ -20,7 +20,7 @@ from AviaxMusic.utils import bot_sys_stats
 from AviaxMusic.utils.decorators.language import LanguageStart
 from AviaxMusic.utils.formatters import get_readable_time
 from AviaxMusic.utils.inline import help_pannel, private_panel, start_panel
-from config import BANNED_USERS
+from config import BANNED_USERS, SUPPORT_GROUP, START_VIDEO_URL
 from strings import get_string
 
 
