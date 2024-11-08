@@ -77,29 +77,55 @@ async def start_pm(client, message: Message, _):
                     ],
                 ]
             )
-            await m.delete()
-            await app.send_photo(
-                chat_id=message.chat.id,
-                photo=thumbnail,
-                caption=searched_text,
-                reply_markup=key,
+            if m:
+    await m.delete()
+    
+    # Send photo with caption and keyboard
+    await app.send_photo(
+        chat_id=message.chat.id,
+        photo=thumbnail,
+        caption=searched_text,
+        reply_markup=key
+    )
+    
+    # Log if enabled
+    if await is_on_off(2):
+        await app.send_message(
+            chat_id=config.LOG_GROUP_ID,
+            text=(
+                f"{message.from_user.mention} started the bot to check <b>track information</b>.\n"
+                f"<b>User ID:</b> <code>{message.from_user.id}</code>\n"
+                f"<b>Username:</b> @{message.from_user.username}"
             )
-            if await is_on_off(2):
-                return await app.send_message(
-                    chat_id=config.LOG_GROUP_ID,
-                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
-                )
+        )
 
-else:
-        out = private_panel(_)
+else:  # Correctly aligned else block
+    out = private_panel(_)
+    
+    # Fetch system statistics
+    try:
         UP, CPU, RAM, DISK = await bot_sys_stats()
-        caption = _["start_2"].format(message.from_user.mention, app.mention, UP, DISK, CPU, RAM)
-        await send_start_video(message, caption, InlineKeyboardMarkup(out))
-        
-        if await is_on_off(2):
-            return await app.send_message(
-                chat_id=config.LOG_GROUP_ID,
-                text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+    except Exception as e:
+        print(f"Error fetching system stats: {e}")
+        UP, CPU, RAM, DISK = "N/A", "N/A", "N/A", "N/A"
+    
+    # Prepare caption
+    caption = _["start_2"].format(
+        message.from_user.mention, app.mention, UP, DISK, CPU, RAM
+    )
+    
+    # Send start video message
+    await send_start_video(
+        message,
+        caption,
+        InlineKeyboardMarkup(out)
+    )
+    
+    # Log if enabled
+    if await is_on_off(2):
+        await app.send_message(
+            chat_id=config.LOG_GROUP_ID
+            text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
             )
 
 
