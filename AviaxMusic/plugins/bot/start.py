@@ -24,7 +24,7 @@ from config import BANNED_USERS
 from strings import get_string
 
 # Helper function to send the start image and caption
-async def send_start_image(message: Message, caption: str, reply_markup: InlineKeyboardMarkup):
+async def send_start_video(message: Message, caption: str, reply_markup: InlineKeyboardMarkup):
     return await message.reply_photo(
         photo=config.START_IMG_URL,
         caption=caption,
