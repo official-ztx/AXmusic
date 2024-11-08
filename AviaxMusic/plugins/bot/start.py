@@ -100,6 +100,7 @@ async def start_pm(client, message: Message, _):
         # Send the video without a caption
         await app.send_video(
             chat_id=message.chat.id,
+            video=config.START_VIDEO_URL, 
             supports_streaming=True,
             reply_markup=key
         )
