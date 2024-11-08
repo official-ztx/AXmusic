@@ -24,13 +24,14 @@ from config import BANNED_USERS
 from strings import get_string
 
 
-# Helper function to send the start image and caption
+# Helper function to send the start video and caption
 async def send_start_video(message: Message, caption: str, reply_markup: InlineKeyboardMarkup):
-    return await message.reply_photo(
-        photo=config.START_IMG_URL,
+    """Send a start video instead of an image."""
+    return await message.reply_video(
+        video=config.START_VIDEO_URL,  # Make sure to set this in your config
         caption=caption,
         supports_streaming=True,
-        reply_markup=reply_markup, 
+        reply_markup=reply_markup
     )
 
 
@@ -50,9 +51,9 @@ async def start_pm(client, message: Message, _):
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
-                return await app.send_message(
+                await app.send_message(
                     chat_id=config.LOG_GROUP_ID,
-                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>sᴜᴅᴏʟɪsᴛ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} checked the <b>sudolist</b>."
                 )
             return
 
@@ -80,25 +81,26 @@ async def start_pm(client, message: Message, _):
                 [
                     [
                         InlineKeyboardButton(text=_["S_B_8"], url=link),
-                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP),
-                    ],
+                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP)
+                    ]
                 ]
             )
 
             await m.delete()
-            await app.send_photo(
+            await app.send_video(
                 chat_id=message.chat.id,
-                photo=thumbnail,
+                video=thumbnail,
                 caption=searched_text,
                 supports_streaming=True,
-                reply_markup=reply_markup, 
+                reply_markup=key
             )
 
             if await is_on_off(2):
-                return await app.send_message(
+                await app.send_message(
                     chat_id=config.LOG_GROUP_ID,
-                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                    text=f"{message.from_user.mention} checked <b>track information</b>."
                 )
+            return
 
     else:
         out = private_panel(_)
@@ -107,9 +109,9 @@ async def start_pm(client, message: Message, _):
         await send_start_video(message, caption, InlineKeyboardMarkup(out))
 
         if await is_on_off(2):
-            return await app.send_message(
+            await app.send_message(
                 chat_id=config.LOG_GROUP_ID,
-                text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                text=f"{message.from_user.mention} started the bot."
             )
 
 
@@ -146,9 +148,9 @@ async def welcome(client, message: Message):
                         _["start_5"].format(
                             app.mention,
                             f"https://t.me/{app.username}?start=sudolist",
-                            config.SUPPORT_GROUP,
+                            config.SUPPORT_GROUP
                         ),
-                        disable_web_page_preview=True,
+                        disable_web_page_preview=True
                     )
                     return await app.leave_chat(message.chat.id)
 
@@ -157,7 +159,7 @@ async def welcome(client, message: Message):
                     message.from_user.first_name,
                     app.mention,
                     message.chat.title,
-                    app.mention,
+                    app.mention
                 )
                 await send_start_video(message, caption, InlineKeyboardMarkup(out))
                 await add_served_chat(message.chat.id)
