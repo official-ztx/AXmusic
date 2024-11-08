@@ -29,7 +29,8 @@ async def send_start_video(message: Message, caption: str, reply_markup: InlineK
     return await message.reply_photo(
         photo=config.START_IMG_URL,
         caption=caption,
-        reply_markup=reply_markup,
+        supports_streaming=True,
+        reply_markup=reply_markup, 
     )
 
 
@@ -89,7 +90,8 @@ async def start_pm(client, message: Message, _):
                 chat_id=message.chat.id,
                 photo=thumbnail,
                 caption=searched_text,
-                reply_markup=key,
+                supports_streaming=True,
+                reply_markup=reply_markup, 
             )
 
             if await is_on_off(2):
