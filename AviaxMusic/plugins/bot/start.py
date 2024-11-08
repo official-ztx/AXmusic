@@ -77,7 +77,8 @@ async def start_pm(client, message: Message, _):
                     ],
                 ]
             )
-            if m:
+         
+   if m:
     await m.delete()
     
     # Send photo with caption and keyboard
