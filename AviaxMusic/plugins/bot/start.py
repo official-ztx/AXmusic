@@ -93,7 +93,7 @@ if m:
             text=(
                 f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n"
                 f"<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n"
-                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}"
+                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}", 
             )
         )
 
