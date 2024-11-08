@@ -3,7 +3,6 @@ from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from youtubesearchpython.future import VideosSearch
-
 import config
 from AviaxMusic import app
 from AviaxMusic.misc import _boot_
@@ -23,6 +22,7 @@ from AviaxMusic.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS
 from strings import get_string
 
+
 # Helper function to send the start image and caption
 async def send_start_video(message: Message, caption: str, reply_markup: InlineKeyboardMarkup):
     return await message.reply_photo(
@@ -36,8 +36,10 @@ async def send_start_video(message: Message, caption: str, reply_markup: InlineK
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
+
     if len(message.text.split()) > 1:
         name = message.text.split(None, 1)[1]
+
         if name[0:4] == "help":
             keyboard = help_pannel(_)
             caption = _["help_1"].format(config.SUPPORT_GROUP)
@@ -45,6 +47,7 @@ async def start_pm(client, message: Message, _):
 
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
+
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOG_GROUP_ID,
@@ -53,81 +56,57 @@ async def start_pm(client, message: Message, _):
             return
 
         if name[0:3] == "inf":
-    m = await message.reply_text("🔎")
-    query = (str(name)).replace("info_", "", 1)
-    query = f"https://www.youtube.com/watch?v={query}"
-    results = VideosSearch(query, limit=1)
+            m = await message.reply_text("🔎")
+            query = (str(name)).replace("info_", "", 1)
+            query = f"https://www.youtube.com/watch?v={query}"
+            results = VideosSearch(query, limit=1)
 
-    for result in (await results.next())["result"]:
-        title = result["title"]
-        duration = result["duration"]
-        views = result["viewCount"]["short"]
-        thumbnail = result["thumbnails"][0]["url"].split("?")[0]
-        channellink = result["channel"]["link"]
-        channel = result["channel"]["name"]
-        link = result["link"]
-        published = result["publishedTime"]
+            for result in (await results.next())["result"]:
+                title = result["title"]
+                duration = result["duration"]
+                views = result["viewCount"]["short"]
+                thumbnail = result["thumbnails"][0]["url"].split("?")[0]
+                channellink = result["channel"]["link"]
+                channel = result["channel"]["name"]
+                link = result["link"]
+                published = result["publishedTime"]
 
-    searched_text = _["start_6"].format(
-        title, duration, views, published, channellink, channel, app.mention
-    )
-
-    key = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(text=_["S_B_8"], url=link),
-                InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP),
-            ],
-        ]
-    )
-
-    # Ensure that this is correctly indented
-    await m.delete()
-
-    await app.send_photo(
-        chat_id=message.chat.id,
-        photo=thumbnail,
-        caption=searched_text,
-        reply_markup=key,
-    )
-   
-    if await is_on_off(2):
-        return await app.send_message(
-            chat_id=config.LOG_GROUP_ID,
-            text=(
-                f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n"
-                f"<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n"
-                f"<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}", 
+            searched_text = _["start_6"].format(
+                title, duration, views, published, channellink, channel, app.mention
             )
-        )
 
-else:  # Correctly aligned else block
-    out = private_panel(_)
-    
-    # Fetch system statistics
-    try:
+            key = InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(text=_["S_B_8"], url=link),
+                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP),
+                    ],
+                ]
+            )
+
+            await m.delete()
+            await app.send_photo(
+                chat_id=message.chat.id,
+                photo=thumbnail,
+                caption=searched_text,
+                reply_markup=key,
+            )
+
+            if await is_on_off(2):
+                return await app.send_message(
+                    chat_id=config.LOG_GROUP_ID,
+                    text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+                )
+    else:
+        out = private_panel(_)
         UP, CPU, RAM, DISK = await bot_sys_stats()
-    except Exception as e:
-        print(f"Error fetching system stats: {e}")
-        UP, CPU, RAM, DISK = "N/A", "N/A", "N/A", "N/A"
-    
-    # Prepare caption
-    caption = _["start_2"].format(
-        message.from_user.mention, app.mention, UP, DISK, CPU, RAM
-    )
-    
-    # Send start video message
-    await send_start_video(
-        message,
-        caption,
-        InlineKeyboardMarkup(out)
-    )
-    
-    # Log if enabled
-    if await is_on_off(2):
-        await app.send_message(
-            chat_id=config.LOG_GROUP_ID, 
-            text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
+        caption = _["start_2"].format(message.from_user.mention, app.mention, UP, DISK, CPU, RAM)
+        await send_start_video(message, caption, InlineKeyboardMarkup(out))
+
+        if await is_on_off(2):
+            return await app.send_message(
+                chat_id=config.LOG_GROUP_ID,
+                text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
             )
 
 
@@ -147,15 +126,18 @@ async def welcome(client, message: Message):
         try:
             language = await get_lang(message.chat.id)
             _ = get_string(language)
+
             if await is_banned_user(member.id):
                 try:
                     await message.chat.ban_member(member.id)
                 except:
                     pass
+
             if member.id == app.id:
                 if message.chat.type != ChatType.SUPERGROUP:
                     await message.reply_text(_["start_4"])
                     return await app.leave_chat(message.chat.id)
+
                 if message.chat.id in await blacklisted_chats():
                     await message.reply_text(
                         _["start_5"].format(
@@ -177,5 +159,6 @@ async def welcome(client, message: Message):
                 await send_start_video(message, caption, InlineKeyboardMarkup(out))
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
+
         except Exception as ex:
             print(ex)
