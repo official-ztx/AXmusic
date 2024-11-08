@@ -3,7 +3,6 @@ from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from youtubesearchpython import VideosSearch
-
 import config
 from AviaxMusic import app
 from AviaxMusic.misc import _boot_
@@ -23,15 +22,18 @@ from AviaxMusic.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS, SUPPORT_GROUP, START_VIDEO_URL
 from strings import get_string
 
-# Helper function to send the start video and caption
+# Helper function to send the start video and caption separately
 async def send_start_video(message: Message, caption: str, reply_markup: InlineKeyboardMarkup):
     """Send a start video instead of an image."""
-    return await message.reply_video(
-        video=START_VIDEO_URL,  # Make sure to set this in your config
+    # Send the video first
+    video_message = await message.reply_video(
+        video=config.START_VIDEO_URL,  # This should be a video URL
         caption=caption,
         supports_streaming=True,
         reply_markup=reply_markup
     )
+    # Now send the caption separately if needed
+    await message.reply_text(caption)  # This sends a text message separately after the video
 
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
@@ -63,21 +65,22 @@ async def start_pm(client, message: Message, _):
             try:
                 # Searching for the video
                 results = VideosSearch(query, limit=1)
-                result = await results.next()  # Get the next batch of results
+                result = (await results.next())["result"]
 
-                if not result or not result.get("result"):
+                if not result:
                     await m.edit_text("No results found.")
                     return
 
-                video = result["result"][0]
-                title = video["title"]
-                duration = video["duration"]
-                views = video["viewCount"]["short"]
-                thumbnail = video["thumbnails"][0]["url"].split("?")[0]
-                channellink = video["channel"]["link"]
-                channel = video["channel"]["name"]
-                link = video["link"]
-                published = video["publishedTime"]
+                # Extracting details from the search result
+                for video in result:
+                    title = video["title"]
+                    duration = video["duration"]
+                    views = video["viewCount"]["short"]
+                    thumbnail = video["thumbnails"][0]["url"].split("?")[0]
+                    channellink = video["channel"]["link"]
+                    channel = video["channel"]["name"]
+                    link = video["link"]
+                    published = video["publishedTime"]
 
                 searched_text = _["start_6"].format(
                     title, duration, views, published, channellink, channel, app.mention
@@ -94,17 +97,21 @@ async def start_pm(client, message: Message, _):
 
                 await m.delete()
 
-                # Send the thumbnail as a photo (not a video)
+                # First send the video thumbnail
                 await app.send_photo(
                     chat_id=message.chat.id,
-                    photo=thumbnail,
-                    reply_markup=key
+                    photo=thumbnail,  # Thumbnail of the video
+                    caption=searched_text,  # Optional caption with video details
+                    reply_markup=key  # Inline buttons with the video link
                 )
 
-                # Send the caption as a separate message
-                await app.send_message(
+                # Now send the video separately (if applicable)
+                # If you want to send the video as well (this would be the YouTube video, not the thumbnail)
+                await app.send_video(
                     chat_id=message.chat.id,
-                    text=searched_text
+                    video=config.START_VIDEO_URL,  # Your starting video URL
+                    supports_streaming=True,
+                    reply_markup=key
                 )
 
                 # Logging if the feature is enabled
@@ -115,8 +122,8 @@ async def start_pm(client, message: Message, _):
                     )
 
             except Exception as e:
-                await m.edit_text(f"An error occurred: {str(e)}")
-                print(f"Error fetching video details: {e}")
+                await m.edit_text("An error occurred while fetching video details.")
+                print(e)
 
             return
 
@@ -132,6 +139,7 @@ async def start_pm(client, message: Message, _):
             text=f"{message.from_user.mention} started the bot."
         )
 
+
 @app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
 @LanguageStart
 async def start_gp(client, message: Message, _):
@@ -140,6 +148,7 @@ async def start_gp(client, message: Message, _):
     caption = _["start_1"].format(app.mention, get_readable_time(uptime))
     await send_start_video(message, caption, InlineKeyboardMarkup(out))
     return await add_served_chat(message.chat.id)
+
 
 @app.on_message(filters.new_chat_members, group=-1)
 async def welcome(client, message: Message):
@@ -179,7 +188,7 @@ async def welcome(client, message: Message):
                 )
                 await send_start_video(message, caption, InlineKeyboardMarkup(out))
                 await add_served_chat(message.chat.id)
-                message.stop_propagation()
+                await message.stop_propagation()
 
         except Exception as ex:
-            print(f"Error handling new chat member: {ex}")
+            print(ex)
