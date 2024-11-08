@@ -2,7 +2,8 @@ import time
 from pyrogram import filters
 from pyrogram.enums import ChatType
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from youtubesearchpython.future import VideosSearch
+from youtubesearchpython import VideosSearch
+
 import config
 from AviaxMusic import app
 from AviaxMusic.misc import _boot_
@@ -47,7 +48,6 @@ async def start_pm(client, message: Message, _):
 
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
-
             if await is_on_off(2):
                 return await app.send_message(
                     chat_id=config.LOG_GROUP_ID,
@@ -97,6 +97,7 @@ async def start_pm(client, message: Message, _):
                     chat_id=config.LOG_GROUP_ID,
                     text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ ᴛᴏ ᴄʜᴇᴄᴋ <b>ᴛʀᴀᴄᴋ ɪɴғᴏʀᴍᴀᴛɪᴏɴ</b>.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
                 )
+
     else:
         out = private_panel(_)
         UP, CPU, RAM, DISK = await bot_sys_stats()
