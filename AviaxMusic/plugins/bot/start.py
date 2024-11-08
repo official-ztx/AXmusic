@@ -32,8 +32,6 @@ async def send_start_video(message: Message, caption: str, reply_markup: InlineK
         supports_streaming=True,
         reply_markup=reply_markup
     )
-    # Now send the caption separately if needed
-    await message.reply_text(caption)  # This sends a text message separately after the video
 
 @app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
 @LanguageStart
@@ -105,8 +103,7 @@ async def start_pm(client, message: Message, _):
                     reply_markup=key  # Inline buttons with the video link
                 )
 
-                # Now send the video separately (if applicable)
-                # If you want to send the video as well (this would be the YouTube video, not the thumbnail)
+                # Now send the video separately (this would be the YouTube video, not the thumbnail)
                 await app.send_video(
                     chat_id=message.chat.id,
                     video=config.START_VIDEO_URL,  # Your starting video URL
