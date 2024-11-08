@@ -8,8 +8,8 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from pyrogram.enums import *
 
 #BOT FILE NAME
-from AviaxMusix import app as app
-from AviaxMusix.mongo.couples_db import _get_image, get_couple
+from AviaxMusic import app as app
+from AviaxMusic.mongop.couples_db import _get_image, get_couple
 
 POLICE = [
     [
