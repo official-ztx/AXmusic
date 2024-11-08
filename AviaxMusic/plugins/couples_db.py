@@ -1,5 +1,5 @@
 
-from AXmusic.utils.mongo import db
+from AXmusic.tools.mongo import db
 
 coupledb = db.couple
 
