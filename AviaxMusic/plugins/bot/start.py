@@ -122,7 +122,7 @@ else:  # Correctly aligned else block
     # Log if enabled
     if await is_on_off(2):
         await app.send_message(
-            chat_id=config.LOG_GROUP_ID
+            chat_id=config.LOG_GROUP_ID, 
             text=f"{message.from_user.mention} ᴊᴜsᴛ sᴛᴀʀᴛᴇᴅ ᴛʜᴇ ʙᴏᴛ.\n\n<b>ᴜsᴇʀ ɪᴅ :</b> <code>{message.from_user.id}</code>\n<b>ᴜsᴇʀɴᴀᴍᴇ :</b> @{message.from_user.username}",
             )
 
