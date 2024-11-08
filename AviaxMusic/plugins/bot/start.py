@@ -1,4 +1,3 @@
-Mʀ. Gᴏᴋᴜ Bʟᴀᴄᴋ:
 import time
 from pyrogram import filters
 from pyrogram.enums import ChatType
@@ -42,7 +41,7 @@ async def start_pm(client, message: Message, _):
         if name[0:4] == "help":
             keyboard = help_pannel(_)
             caption = _["help_1"].format(config.SUPPORT_GROUP)
-            return await send_start_image(message, caption, keyboard)
+            return await send_start_video(message, caption, keyboard)
 
         if name[0:3] == "sud":
             await sudoers_list(client=client, message=message, _=_)
@@ -95,7 +94,7 @@ else:
         out = private_panel(_)
         UP, CPU, RAM, DISK = await bot_sys_stats()
         caption = _["start_2"].format(message.from_user.mention, app.mention, UP, DISK, CPU, RAM)
-        await send_start_image(message, caption, InlineKeyboardMarkup(out))
+        await send_start_video(message, caption, InlineKeyboardMarkup(out))
         
         if await is_on_off(2):
             return await app.send_message(
@@ -110,7 +109,7 @@ async def start_gp(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
     caption = _["start_1"].format(app.mention, get_readable_time(uptime))
-    await send_start_image(message, caption, InlineKeyboardMarkup(out))
+    await send_start_video(message, caption, InlineKeyboardMarkup(out))
     return await add_served_chat(message.chat.id)
 
 
@@ -147,7 +146,7 @@ async def welcome(client, message: Message):
                     message.chat.title,
                     app.mention,
                 )
-                await send_start_image(message, caption, InlineKeyboardMarkup(out))
+                await send_start_video(message, caption, InlineKeyboardMarkup(out))
                 await add_served_chat(message.chat.id)
                 await message.stop_propagation()
         except Exception as ex:
