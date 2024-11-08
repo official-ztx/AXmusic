@@ -53,40 +53,44 @@ async def start_pm(client, message: Message, _):
             return
 
         if name[0:3] == "inf":
-            m = await message.reply_text("🔎")
-            query = (str(name)).replace("info_", "", 1)
-            query = f"https://www.youtube.com/watch?v={query}"
-            results = VideosSearch(query, limit=1)
-            for result in (await results.next())["result"]:
-                title = result["title"]
-                duration = result["duration"]
-                views = result["viewCount"]["short"]
-                thumbnail = result["thumbnails"][0]["url"].split("?")[0]
-                channellink = result["channel"]["link"]
-                channel = result["channel"]["name"]
-                link = result["link"]
-                published = result["publishedTime"]
-            searched_text = _["start_6"].format(
-                title, duration, views, published, channellink, channel, app.mention
-            )
-            key = InlineKeyboardMarkup(
-                [
-                    [
-                        InlineKeyboardButton(text=_["S_B_8"], url=link),
-                        InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP),
-                    ],
-                ]
-            )
-         
-if m:
+    m = await message.reply_text("🔎")
+    query = (str(name)).replace("info_", "", 1)
+    query = f"https://www.youtube.com/watch?v={query}"
+    results = VideosSearch(query, limit=1)
+
+    for result in (await results.next())["result"]:
+        title = result["title"]
+        duration = result["duration"]
+        views = result["viewCount"]["short"]
+        thumbnail = result["thumbnails"][0]["url"].split("?")[0]
+        channellink = result["channel"]["link"]
+        channel = result["channel"]["name"]
+        link = result["link"]
+        published = result["publishedTime"]
+
+    searched_text = _["start_6"].format(
+        title, duration, views, published, channellink, channel, app.mention
+    )
+
+    key = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(text=_["S_B_8"], url=link),
+                InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP),
+            ],
+        ]
+    )
+
+    # Ensure that this is correctly indented
     await m.delete()
+
     await app.send_photo(
         chat_id=message.chat.id,
         photo=thumbnail,
         caption=searched_text,
-        reply_markup=key
+        reply_markup=key,
     )
-    
+   
     if await is_on_off(2):
         return await app.send_message(
             chat_id=config.LOG_GROUP_ID,
