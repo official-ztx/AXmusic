@@ -34,6 +34,7 @@ async def send_start_video(chat_id, reply_markup):
             supports_streaming=True,
             reply_markup=reply_markup
         )
+        print("Video sent successfully")
         return sent_video
     except Exception as e:
         print(f"Error sending video: {e}")
@@ -52,29 +53,25 @@ async def start_pm(client, message: Message, _):
         message.from_user.mention, app.mention, UP, DISK, CPU, RAM
     )
 
-    # Send the video first and get its message object
+    # Step 1: Send the video first
     video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
-    # Introduce a short delay to ensure the video is fully sent
-    await asyncio.sleep(1)
-
     if video_message:
-        # Send the text as a reply to the video
+        # Step 2: Wait for a short moment to ensure the video is fully sent
+        await asyncio.sleep(0.5)
+
+        # Step 3: Send the caption text as a reply to the video
         try:
             await app.send_message(
                 chat_id=message.chat.id,
                 text=caption,
-                reply_to_message_id=video_message.message_id  # This makes the text quoted
+                reply_to_message_id=video_message.message_id
             )
+            print("Caption sent successfully")
         except Exception as e:
             print(f"Error sending caption text: {e}")
-
-    # Log if enabled
-    if await is_on_off(2):
-        await app.send_message(
-            chat_id=config.LOG_GROUP_ID,
-            text=f"{message.from_user.mention} started the bot."
-        )
+    else:
+        print("Failed to send video")
 
 
 @app.on_message(filters.command("start") & filters.group & ~BANNED_USERS)
@@ -84,13 +81,11 @@ async def start_group(client, message: Message, _):
     uptime = int(time.time() - _boot_)
     caption = _["start_1"].format(app.mention, get_readable_time(uptime))
 
-    # Send the video in the group and get its message object
+    # Step 1: Send the video in the group
     video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
-    # Introduce a short delay to ensure the video is fully sent
-    await asyncio.sleep(1)
-
     if video_message:
+        await asyncio.sleep(0.5)
         try:
             await app.send_message(
                 chat_id=message.chat.id,
@@ -137,13 +132,10 @@ async def welcome(client, message: Message):
                     app.mention
                 )
 
-                # Send the video for new chat members and get the message object
                 video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
-                # Introduce a short delay to ensure the video is fully sent
-                await asyncio.sleep(1)
-
                 if video_message:
+                    await asyncio.sleep(0.5)
                     await app.send_message(
                         chat_id=message.chat.id,
                         text=caption,
