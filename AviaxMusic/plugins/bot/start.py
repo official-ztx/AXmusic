@@ -40,24 +40,12 @@ async def send_start_video(chat_id, reply_markup):
         return None
 
 
-async def send_text_message(chat_id, text, reply_to_message_id):
-    """Send a text message as a reply to the video."""
-    try:
-        await asyncio.sleep(1)  # Add delay to ensure video is processed
-        await app.send_message(
-            chat_id=chat_id,
-            text=text,
-            reply_to_message_id=reply_to_message_id
-        )
-    except Exception as e:
-        print(f"Error sending text: {e}")
-
-
 @app.on_message(filters.command("start") & filters.private & ~BANNED_USERS)
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
 
+    # Generate panels and system stats
     out = private_panel(_)
     UP, CPU, RAM, DISK = await bot_sys_stats()
     caption = _["start_2"].format(
@@ -68,14 +56,19 @@ async def start_pm(client, message: Message, _):
     video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
     if video_message:
-        # Send the text as a separate message replying to the video
-        await send_text_message(
-            chat_id=message.chat.id,
-            text=caption,
-            reply_to_message_id=video_message.message_id
-        )
+        # Add a delay to ensure the video is fully sent before sending text
+        await asyncio.sleep(1)
+        
+        # Send the text as a separate message
+        try:
+            await app.send_message(
+                chat_id=message.chat.id,
+                text=caption
+            )
+        except Exception as e:
+            print(f"Error sending text: {e}")
 
-    # Logging if enabled
+    # Log if enabled
     if await is_on_off(2):
         await app.send_message(
             chat_id=config.LOG_GROUP_ID,
@@ -90,15 +83,19 @@ async def start_group(client, message: Message, _):
     uptime = int(time.time() - _boot_)
     caption = _["start_1"].format(app.mention, get_readable_time(uptime))
 
-    # Send the video first in the group chat
+    # Send the video in the group
     video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
     if video_message:
-        await send_text_message(
-            chat_id=message.chat.id,
-            text=caption,
-            reply_to_message_id=video_message.message_id
-        )
+        await asyncio.sleep(1)  # Ensure video is fully sent
+        try:
+            await app.send_message(
+                chat_id=message.chat.id,
+                text=caption
+            )
+        except Exception as e:
+            print(f"Error sending text in group: {e}")
+
     await add_served_chat(message.chat.id)
 
 
@@ -135,14 +132,17 @@ async def welcome(client, message: Message):
                     message.chat.title,
                     app.mention
                 )
+
+                # Send the video for new chat members
                 video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
                 if video_message:
-                    await send_text_message(
+                    await asyncio.sleep(1)
+                    await app.send_message(
                         chat_id=message.chat.id,
-                        text=caption,
-                        reply_to_message_id=video_message.message_id
+                        text=caption
                     )
                 await add_served_chat(message.chat.id)
+
         except Exception as ex:
             print(f"Error welcoming new members: {ex}")
