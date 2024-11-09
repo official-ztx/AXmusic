@@ -25,47 +25,58 @@ from strings import get_string
 
 
 # Helper function to send the start video
-async def send_start_video(message: Message, reply_markup: InlineKeyboardMarkup):
-    """Send a start video without a caption."""
-    return await message.reply_video(
-        video=config.START_VIDEO_URL,
-        supports_streaming=True,
-        reply_markup=reply_markup
-    )
+async def send_start_video(chat_id, reply_markup):
+    """Send the start video without a caption."""
+    try:
+        sent_video = await app.send_video(
+            chat_id=chat_id,
+            video=config.START_VIDEO_URL,
+            supports_streaming=True,
+            reply_markup=reply_markup
+        )
+        return sent_video
+    except Exception as e:
+        print(f"Error sending video: {e}")
+        return None
 
 
-# Function to send the text message separately as a reply to the video
-async def send_text_message(chat_id, text, reply_to_message_id, reply_markup=None):
-    """Send a text message as a reply to a video."""
-    return await app.send_message(
-        chat_id=chat_id,
-        text=text,
-        reply_to_message_id=reply_to_message_id,
-        reply_markup=reply_markup
-    )
+# Function to send a separate text message as a reply to the video
+async def send_text_message(chat_id, text, reply_to_message_id):
+    """Send a text message as a reply to the video."""
+    try:
+        await app.send_message(
+            chat_id=chat_id,
+            text=text,
+            reply_to_message_id=reply_to_message_id
+        )
+    except Exception as e:
+        print(f"Error sending text: {e}")
 
 
-# Private start command handler
-@app.on_message(filters.command(["start"]) & filters.private & ~BANNED_USERS)
+# Handler for the /start command in private chat
+@app.on_message(filters.command("start") & filters.private & ~BANNED_USERS)
 @LanguageStart
 async def start_pm(client, message: Message, _):
     await add_served_user(message.from_user.id)
 
-    # Handling optional parameters after /start
+    # Check if the command has additional parameters
     if len(message.text.split()) > 1:
         name = message.text.split(None, 1)[1]
 
-        if name[0:4] == "help":
+        if name.startswith("help"):
             keyboard = help_pannel(_)
-            caption = _["help_1"].format(config.SUPPORT_GROUP)
-            video_message = await send_start_video(message, keyboard)
-            return await send_text_message(
-                chat_id=message.chat.id,
-                text=caption,
-                reply_to_message_id=video_message.message_id
-            )
+            caption = _["help_1"].format(SUPPORT_GROUP)
+            video_message = await send_start_video(message.chat.id, keyboard)
 
-        if name[0:3] == "sud":
+            if video_message:
+                await send_text_message(
+                    chat_id=message.chat.id,
+                    text=caption,
+                    reply_to_message_id=video_message.message_id
+                )
+            return
+
+        if name.startswith("sud"):
             await sudoers_list(client=client, message=message, _=_)
             if await is_on_off(2):
                 await app.send_message(
@@ -74,67 +85,7 @@ async def start_pm(client, message: Message, _):
                 )
             return
 
-        if name[0:3] == "inf":
-            m = await message.reply_text("🔎 Searching...")
-            query = (str(name)).replace("info_", "", 1)
-            query = f"https://www.youtube.com/watch?v={query}"
-
-            try:
-                results = VideosSearch(query, limit=1)
-                result = (await results.next())["result"]
-
-                if not result:
-                    await m.edit_text("No results found.")
-                    return
-
-                # Extract video details
-                video_info = result[0]
-                title = video_info["title"]
-                duration = video_info["duration"]
-                views = video_info["viewCount"]["short"]
-                channellink = video_info["channel"]["link"]
-                channel = video_info["channel"]["name"]
-                link = video_info["link"]
-                published = video_info["publishedTime"]
-
-                searched_text = _["start_6"].format(
-                    title, duration, views, published, channellink, channel, app.mention
-                )
-
-                key = InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton(text=_["S_B_8"], url=link),
-                            InlineKeyboardButton(text=_["S_B_9"], url=config.SUPPORT_GROUP)
-                        ]
-                    ]
-                )
-
-                await m.delete()
-
-                # Send the video first without a caption
-                video_message = await send_start_video(message, key)
-
-                # Send the text as a reply to the video
-                await send_text_message(
-                    chat_id=message.chat.id,
-                    text=searched_text,
-                    reply_to_message_id=video_message.message_id,
-                    reply_markup=key
-                )
-
-                if await is_on_off(2):
-                    await app.send_message(
-                        chat_id=config.LOG_GROUP_ID,
-                        text=f"{message.from_user.mention} checked <b>track information</b>."
-                    )
-
-            except Exception as e:
-                await m.edit_text("An error occurred while fetching video details.")
-                print(e)
-            return
-
-    # Default start message for new users
+    # Default /start behavior
     out = private_panel(_)
     UP, CPU, RAM, DISK = await bot_sys_stats()
     caption = _["start_2"].format(
@@ -142,15 +93,17 @@ async def start_pm(client, message: Message, _):
     )
 
     # Send the video first
-    video_message = await send_start_video(message, InlineKeyboardMarkup(out))
+    video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
-    # Send the caption as a reply to the video
-    await send_text_message(
-        chat_id=message.chat.id,
-        text=caption,
-        reply_to_message_id=video_message.message_id
-    )
+    if video_message:
+        # Send the text as a separate message replying to the video
+        await send_text_message(
+            chat_id=message.chat.id,
+            text=caption,
+            reply_to_message_id=video_message.message_id
+        )
 
+    # Logging if enabled
     if await is_on_off(2):
         await app.send_message(
             chat_id=config.LOG_GROUP_ID,
@@ -158,21 +111,24 @@ async def start_pm(client, message: Message, _):
         )
 
 
-# Group start command handler
-@app.on_message(filters.command(["start"]) & filters.group & ~BANNED_USERS)
+# Handler for the /start command in group chat
+@app.on_message(filters.command("start") & filters.group & ~BANNED_USERS)
 @LanguageStart
-async def start_gp(client, message: Message, _):
+async def start_group(client, message: Message, _):
     out = start_panel(_)
     uptime = int(time.time() - _boot_)
     caption = _["start_1"].format(app.mention, get_readable_time(uptime))
 
-    video_message = await send_start_video(message, InlineKeyboardMarkup(out))
-    await send_text_message(
-        chat_id=message.chat.id,
-        text=caption,
-        reply_to_message_id=video_message.message_id
-    )
-    return await add_served_chat(message.chat.id)
+    # Send the video first in the group chat
+    video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
+
+    if video_message:
+        await send_text_message(
+            chat_id=message.chat.id,
+            text=caption,
+            reply_to_message_id=video_message.message_id
+        )
+    await add_served_chat(message.chat.id)
 
 
 # Welcome new chat members
@@ -183,28 +139,29 @@ async def welcome(client, message: Message):
             language = await get_lang(message.chat.id)
             _ = get_string(language)
 
+            # Check if the new member is banned
             if await is_banned_user(member.id):
-                try:
-                    await message.chat.ban_member(member.id)
-                except:
-                    pass
+                await message.chat.ban_member(member.id)
 
+            # If the bot is added to a non-supergroup, leave
             if member.id == app.id:
                 if message.chat.type != ChatType.SUPERGROUP:
                     await message.reply_text(_["start_4"])
                     return await app.leave_chat(message.chat.id)
 
+                # Check if the chat is blacklisted
                 if message.chat.id in await blacklisted_chats():
                     await message.reply_text(
                         _["start_5"].format(
                             app.mention,
                             f"https://t.me/{app.username}?start=sudolist",
-                            config.SUPPORT_GROUP
+                            SUPPORT_GROUP
                         ),
                         disable_web_page_preview=True
                     )
                     return await app.leave_chat(message.chat.id)
 
+                # Send welcome video and message
                 out = start_panel(_)
                 caption = _["start_3"].format(
                     message.from_user.first_name,
@@ -212,14 +169,14 @@ async def welcome(client, message: Message):
                     message.chat.title,
                     app.mention
                 )
+                video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
 
-                video_message = await send_start_video(message, InlineKeyboardMarkup(out))
-                await send_text_message(
-                    chat_id=message.chat.id,
-                    text=caption,
-                    reply_to_message_id=video_message.message_id
-                )
+                if video_message:
+                    await send_text_message(
+                        chat_id=message.chat.id,
+                        text=caption,
+                        reply_to_message_id=video_message.message_id
+                    )
                 await add_served_chat(message.chat.id)
-
         except Exception as ex:
-            print(ex)
+            print(f"Error welcoming new members: {ex}")
