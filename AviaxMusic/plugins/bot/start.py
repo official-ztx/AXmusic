@@ -24,21 +24,18 @@ from AviaxMusic.utils.inline import help_pannel, private_panel, start_panel
 from config import BANNED_USERS, SUPPORT_GROUP, START_VIDEO_URL
 from strings import get_string
 
-
-async def send_start_video(chat_id, reply_markup):
+async def send_start_video(chat_id):
     """Send the start video without a caption."""
     try:
         sent_video = await app.send_video(
             chat_id=chat_id,
             video=config.START_VIDEO_URL,
-            supports_streaming=True,
-            reply_markup=reply_markup
+            supports_streaming=True
         )
         return sent_video
     except Exception as e:
         print(f"Error sending video: {e}")
         return None
-
 
 @app.on_message(filters.command("start") & filters.private & ~BANNED_USERS)
 @LanguageStart
@@ -53,17 +50,18 @@ async def start_pm(client, message: Message, _):
     )
 
     # Send the video first
-    video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
+    video_message = await send_start_video(message.chat.id)
 
     if video_message:
-        # Add a delay to ensure the video is fully sent before sending text
+        # Add a brief delay to ensure the video is fully sent
         await asyncio.sleep(1)
-        
-        # Send the text as a separate message
+
+        # Send the text and inline buttons as a separate message
         try:
             await app.send_message(
                 chat_id=message.chat.id,
-                text=caption
+                text=caption,
+                reply_markup=InlineKeyboardMarkup(private_panel(_))
             )
         except Exception as e:
             print(f"Error sending text: {e}")
@@ -75,7 +73,6 @@ async def start_pm(client, message: Message, _):
             text=f"{message.from_user.mention} started the bot."
         )
 
-
 @app.on_message(filters.command("start") & filters.group & ~BANNED_USERS)
 @LanguageStart
 async def start_group(client, message: Message, _):
@@ -84,20 +81,20 @@ async def start_group(client, message: Message, _):
     caption = _["start_1"].format(app.mention, get_readable_time(uptime))
 
     # Send the video in the group
-    video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
+    video_message = await send_start_video(message.chat.id)
 
     if video_message:
         await asyncio.sleep(1)  # Ensure video is fully sent
         try:
             await app.send_message(
                 chat_id=message.chat.id,
-                text=caption
+                text=caption,
+                reply_markup=InlineKeyboardMarkup(out)
             )
         except Exception as e:
             print(f"Error sending text in group: {e}")
 
     await add_served_chat(message.chat.id)
-
 
 @app.on_message(filters.new_chat_members, group=-1)
 async def welcome(client, message: Message):
@@ -134,13 +131,14 @@ async def welcome(client, message: Message):
                 )
 
                 # Send the video for new chat members
-                video_message = await send_start_video(message.chat.id, InlineKeyboardMarkup(out))
+                video_message = await send_start_video(message.chat.id)
 
                 if video_message:
                     await asyncio.sleep(1)
                     await app.send_message(
                         chat_id=message.chat.id,
-                        text=caption
+                        text=caption,
+                        reply_markup=InlineKeyboardMarkup(out)
                     )
                 await add_served_chat(message.chat.id)
 
